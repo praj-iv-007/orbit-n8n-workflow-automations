@@ -1,0 +1,119 @@
+{
+  "createdAt": "2025-04-21T01:35:55.017Z",
+  "updatedAt": "2025-04-25T15:41:29.000Z",
+  "id": "HpuNVsMZoSvhn6jE",
+  "name": "icm-get-TableData",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{ $json.rTable }}/inputforms/0/data?limit=10000",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVynePROD"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "a27be5c3-8077-476d-9821-098b40ea4bf0",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de1933b6-5952-45b5-940b-c89bb0b1152a",
+              "name": "data",
+              "value": "={{ $json.data.map(row => Object.fromEntries($json.columnDefinitions.map((col, i) => [col.name, row[i]]))) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        0
+      ],
+      "id": "dfaf4daa-16a6-442c-bc9a-ee098f383627",
+      "name": "Filter data"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "rTable"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        20,
+        0
+      ],
+      "id": "5435e484-bf78-4229-a04f-7a93d43efc3d",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Filter data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "eff2649f-f415-464a-acbd-6c37d6f4a97a",
+  "triggerCount": 0,
+  "tags": []
+}
