@@ -1,0 +1,206 @@
+{
+  "createdAt": "2025-06-25T18:14:26.004Z",
+  "updatedAt": "2025-07-15T13:56:18.000Z",
+  "id": "kw73vWXe3qZC1ZlV",
+  "name": "Full Backend Workflow",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aacbbb46-9d58-43c0-a346-1c541e3bce7a",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        -520
+      ],
+      "id": "14e8f54a-4367-4b10-b7ea-7aeb5d141b18",
+      "name": "Webhook",
+      "webhookId": "aacbbb46-9d58-43c0-a346-1c541e3bce7a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f7b78f3-d912-4939-87bc-5d3ec7f5adcb",
+              "leftValue": "={{ $json.userId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "318499ce-02b8-4647-bba2-981c654ece36",
+              "leftValue": "={{ $json.model }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        20,
+        -520
+      ],
+      "id": "e5248de3-a516-425c-9fde-b7babbad906c",
+      "name": "User has configured account"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        420,
+        -140
+      ],
+      "id": "a266c620-9be4-46b5-9876-33da6344faa7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require(\"crypto\")\n\nconst ENCRYPTION_KEY =  Buffer.from('&oe(#T}1U$<dnd)PRN.o%t#u>nB_,msi', 'utf-8');\n\nfunction encryptApiKey(apiKey) {\n  const algorithm = 'aes-256-gcm';\n  const iv = crypto.randomBytes(16);\n  \n  const cipher = crypto.createCipheriv(algorithm, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);\n  \n  let encrypted = cipher.update(apiKey, 'utf8', 'hex');\n  encrypted += cipher.final('hex');\n  \n  const authTag = cipher.getAuthTag();\n  \n  return {\n    encrypted: encrypted,\n    iv: iv.toString('hex'),\n    authTag: authTag.toString('hex')\n  };\n}\n\n// const encryptedKey = encryptApiKey(\"icm-LOkeUexIcbRvL+zA9GueJrbtWWHGZRFNpVQb/6UCz4E=\");\n\nconst encryptedKey = encryptApiKey(\"encryptKey\");\n\nconsole.log(encryptedKey)\nreturn encryptedKey"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -900
+      ],
+      "id": "c454064c-cf89-4600-9b9b-4e70e6f3c5fb",
+      "name": "Encrypt key"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// Get encryption key from environment variable\nconst ENCRYPTION_KEY = Buffer.from(\"&oe(#T}1U$<dnd)PRN.o%t#u>nB_,msi\", 'utf-8');\n\nfunction decryptApiKey(encryptedData, iv, authTag) {\n  const algorithm = 'aes-256-gcm';\n  \n  const decipher = crypto.createDecipheriv(algorithm, ENCRYPTION_KEY, Buffer.from(iv));\n  decipher.setAuthTag(Buffer.from(authTag, 'hex'));\n  \n  let decrypted = decipher.update(encryptedData, 'hex', 'utf8');\n  decrypted += decipher.final('utf8');\n  \n  return decrypted;\n}\n\n// Decrypt the API key\nconst decryptedApiKey = decryptApiKey(\n  $input.first().json.encrypted_api_key,\n  $input.first().json.iv,\n  $input.first().json.auth_tag\n);\n\n// Return decrypted API key for use in Varicent API call\nreturn [{\n  json: {\n    apiKey: decryptedApiKey,\n    instanceUrl: dbResult.instanceUrl,\n    userId: dbResult.userId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -540
+      ],
+      "id": "100803a2-fed4-4010-87bd-a1414f44357a",
+      "name": "Decrypt Key"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "api_key",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        280,
+        -540
+      ],
+      "id": "01589d57-7f4c-496f-9c4f-6229450a1a0c",
+      "name": "get user encrypted key",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "User has configured account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User has configured account": {
+      "main": [
+        [
+          {
+            "node": "get user encrypted key",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encrypt key": {
+      "main": [
+        []
+      ]
+    },
+    "get user encrypted key": {
+      "main": [
+        [
+          {
+            "node": "Decrypt Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "userId": "a6042162-40e1-4a3a-b3f2-760708af69e1",
+          "model": "InnoVyneDEMO"
+        }
+      }
+    ]
+  },
+  "versionId": "30bff500-e18c-47f1-85c2-0595a9a4b984",
+  "triggerCount": 0,
+  "tags": []
+}
