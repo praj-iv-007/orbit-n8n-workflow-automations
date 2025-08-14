@@ -1,0 +1,385 @@
+{
+  "createdAt": "2025-06-06T18:18:58.512Z",
+  "updatedAt": "2025-06-09T15:29:22.000Z",
+  "id": "p3Aurs1WZg1CxaBO",
+  "name": "Test Agentic AI (using Airtable dummy data)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b349cbfe-aaed-4cd9-9442-14358e42d921",
+      "name": "When chat message received",
+      "webhookId": "49bf695e-6511-4d88-9e39-1183892f1354"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        220,
+        0
+      ],
+      "id": "c0e6a63d-1fdc-41a7-962f-f99956d7fc63",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-3-7-sonnet-20250219",
+          "cachedResultName": "Claude 3.7 Sonnet"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        240
+      ],
+      "id": "a50b31cd-5625-4ac1-8242-28258a5db39d",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "eT6fwac9owUGAq1q",
+          "name": "om-anthropickey"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        260,
+        220
+      ],
+      "id": "15d9dedb-29f0-4cf5-9637-4a77ab65e530",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "base",
+        "operation": "getSchema",
+        "base": {
+          "__rl": true,
+          "value": "appf9w3kZvvTc5Hj9",
+          "mode": "list",
+          "cachedResultName": "Agentic Flow Testing",
+          "cachedResultUrl": "https://airtable.com/appf9w3kZvvTc5Hj9"
+        }
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        260
+      ],
+      "id": "356d9f2f-350e-4307-87fc-9b4d82b707b6",
+      "name": "Get all tables",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "aXAvWCipHOKdiR9E",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appf9w3kZvvTc5Hj9",
+          "mode": "list",
+          "cachedResultName": "Agentic Flow Testing",
+          "cachedResultUrl": "https://airtable.com/appf9w3kZvvTc5Hj9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblEJC3LfqQAKHUrT",
+          "mode": "list",
+          "cachedResultName": "Payouts",
+          "cachedResultUrl": "https://airtable.com/appf9w3kZvvTc5Hj9/tblEJC3LfqQAKHUrT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Gross Payout": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Gross_Payout', ``, 'number') }}",
+            "Base Component": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Base_Component', ``, 'number') }}",
+            "Accelerator": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Accelerator', ``, 'number') }}",
+            "Spiff": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Spiff', ``, 'number') }}",
+            "Payout ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Payout_ID', ``, 'string') }}",
+            "Participant Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Participant_Name', ``, 'string') }}",
+            "Period": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Period', ``, 'string') }}",
+            "Attainment": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attainment', ``, 'string') }}",
+            "Status": "Pending",
+            "Paid Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Paid_Date', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Payout ID",
+              "displayName": "Payout ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Participant Name",
+              "displayName": "Participant Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Period",
+              "displayName": "Period",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Gross Payout",
+              "displayName": "Gross Payout",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Base Component",
+              "displayName": "Base Component",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Accelerator",
+              "displayName": "Accelerator",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Spiff",
+              "displayName": "Spiff",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attainment",
+              "displayName": "Attainment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Paid",
+                  "value": "Paid"
+                },
+                {
+                  "name": "Pending",
+                  "value": "Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Paid Date",
+              "displayName": "Paid Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        680,
+        260
+      ],
+      "id": "0b1d3828-836b-4f5c-96a4-8a4091fbcf08",
+      "name": "Add new records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "aXAvWCipHOKdiR9E",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appf9w3kZvvTc5Hj9",
+          "mode": "list",
+          "cachedResultName": "Agentic Flow Testing",
+          "cachedResultUrl": "https://airtable.com/appf9w3kZvvTc5Hj9"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Table', ``, 'string') }}",
+          "mode": "id"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter_By_Formula', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        540,
+        260
+      ],
+      "id": "a1659cbe-b0f2-408b-ad1d-ebe63349770c",
+      "name": "Search Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "aXAvWCipHOKdiR9E",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all tables": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add new records": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "90f5bd16-0fb9-416d-b399-1f5981373449",
+  "triggerCount": 0,
+  "tags": []
+}
