@@ -1,0 +1,194 @@
+{
+  "createdAt": "2025-06-30T16:39:00.971Z",
+  "updatedAt": "2025-08-14T17:28:20.000Z",
+  "id": "zOEIXLoDEh0udoGL",
+  "name": "Data Imports",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "33511748-d661-425e-9905-7fbafc82de3f"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        -168,
+        -120
+      ],
+      "id": "9d1471f8-7a5d-4dba-a5a0-31189cf3ef04",
+      "name": "MCP Server Trigger Data Import",
+      "webhookId": "33511748-d661-425e-9905-7fbafc82de3f"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an http request to get the server files. this function is run repeatedly (using exponential backoff, up to 5 times) until the file being upload is present on the list",
+        "url": "https://spm.varicent.com/api/v1/serverfilenames?filter=FileType=Data;IsComplete=false",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        120
+      ],
+      "id": "1063a263-47f2-43a8-a8fb-494fccc5a813",
+      "name": "Get server files",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "call this tool to initiate and complete a data import. files uploaded must be base 64 encoded and the size of the file being uploaded must be defined. \n\nThe columns and matched columns fields are an array string, where each element is in line with its corresponding element (columns comes from the table schema and matched columns comes from the uploaded file. you can make a get call to the appropriate table to get the the columns for it). if the columns are as follows from the table and csv respectively:\n\n`Id, name, description, region, start`\nand\n`identification_no, desc, startDate, first_name, regional_territory`, the mappings should be \ncolumns: [\"Id\", \"name\", \"description\", \"region\", \"start\"]\nmatchedColumns: [\"identification_no\", \"first_name\", \"desc\", \"regional_territory\", \"startDate\"]\n\ndateFormat can either be: \"Default\", \"MonthFirst\", or \"DayFirst\". try and glean what the correct format is from the data that is given to you.",
+        "workflowId": {
+          "__rl": true,
+          "value": "H7X4wpf8BA2KrBVL",
+          "mode": "list",
+          "cachedResultName": "IV ICM Connector — Data Import Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fileName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fileName', ``, 'string') }}",
+            "base64": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('base64', ``, 'string') }}",
+            "tableName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tableName', ``, 'string') }}",
+            "matchedColumns": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('matchedColumns', ``, 'string') }}",
+            "columns": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('columns', ``, 'string') }}",
+            "dateFormat": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('dateFormat', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "fileName",
+              "displayName": "fileName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "base64",
+              "displayName": "base64",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "tableName",
+              "displayName": "tableName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "matchedColumns",
+              "displayName": "matchedColumns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "columns",
+              "displayName": "columns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "dateFormat",
+              "displayName": "dateFormat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        100
+      ],
+      "id": "ffa95381-5a29-464d-9b4e-b33b8d4a4a5c",
+      "name": "Call Data Import Workflow"
+    }
+  ],
+  "connections": {
+    "Get server files": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Data Import",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Data Import Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Data Import",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "10badaff-4a57-40c3-b0a7-82547376265b",
+  "triggerCount": 1,
+  "tags": [
+    {
+      "createdAt": "2025-08-14T17:27:48.817Z",
+      "updatedAt": "2025-08-14T17:27:48.817Z",
+      "id": "dbeWvFo6JyXIZRnx",
+      "name": "Orbit Core"
+    }
+  ]
+}
