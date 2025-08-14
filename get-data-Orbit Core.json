@@ -1,0 +1,781 @@
+{
+  "createdAt": "2025-06-11T20:10:49.335Z",
+  "updatedAt": "2025-08-14T17:28:33.000Z",
+  "id": "0rjA3ttIbYB610hc",
+  "name": "Get Data",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Get elements from the composer",
+        "url": "https://spm.varicent.com/api/v1/composer/0/elements",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -380,
+        -40
+      ],
+      "id": "3fc55d7d-d4f5-4879-8bc5-23856ea1e21e",
+      "name": "Get Components",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to get tables",
+        "url": "=https://spm.varicent.com/api/v1/components/{{ $fromAI('Component', `The Component Id Number`, 'number') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -220,
+        -40
+      ],
+      "id": "684a735f-e377-4ee5-a4d7-d299e35a3d73",
+      "name": "Get Component",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "update records in a table. Request Body looks like:\n\n{\noldRows: string[],\nrows: string[],\ninputFormId: 0,\neffectiveDate: null,\noverwrite: [null]\n}",
+        "method": "PATCH",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{$fromAI('TableName','Name of the table to update', 'string')}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "oldRows",
+              "value": "={{ $fromAI('oldRows', `This should be an array of the row as it currently is, unchanged and with the columns in the same order as returned by the get function. All items in the array must be a string, and should be an array of arrays`, 'json') }}"
+            },
+            {
+              "name": "rows",
+              "value": "={{ $fromAI('rows', `This should be an array of the row as it should be once updated, with only the changed firelds different, with the columns in the same order as returned by the get function. All items in the array must be a string, and should be an array of arrays`, 'json') }}"
+            },
+            {
+              "name": "inputFormId",
+              "value": "={{0}}"
+            },
+            {
+              "name": "effectiveDate",
+              "value": "={{null}}"
+            },
+            {
+              "name": "overwrite",
+              "value": "={{ [null] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        -100
+      ],
+      "id": "533ffff3-c72b-47ae-aab4-eec1cb5fbfd1",
+      "name": "update records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "gets all the data from the table",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{ $fromAI('TblName', 'The name of the table', 'string')}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "={{ $fromAI(\"offset\", \"The offset or skip of the table query\", \"number\", 0) }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $fromAI(\"limit\", \"The limit or take of the table query\", \"number\", 100) }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -100,
+        -40
+      ],
+      "id": "49894918-f3bb-4834-8015-af71b59e30bc",
+      "name": "Get all data from a table",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to create a new file to upload to SPM server",
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v2/serverfiles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n\"Content-Type\": \"application/json\",\n\"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chunkSize",
+              "value": "={{ $fromAI(\"chunkSize\", \"the chunk size of the data being imported\", \"number\") }}"
+            },
+            {
+              "name": "fileName",
+              "value": "={{ $fromAi(\"fileName\", \"name of the file to be uploaded. append the current time as millis to the end of the file name to make the filename a unique string\", \"string\") }}"
+            },
+            {
+              "name": "size",
+              "value": "={{ $fromAI(\"size\", \"size of the file being uploaded\", \"number\") }}"
+            },
+            {
+              "name": "overwrite",
+              "value": "={{ false }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -320
+      ],
+      "id": "8fc1ca66-0731-4e27-b2d3-95f5ff8a5879",
+      "name": "Data Import Create File On Server",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to push the newly created file onto the server",
+        "method": "PUT",
+        "url": "https://spm.varicent.com/api/v2/serverfiles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n\"Content-Type\": \"application/json\",\n\"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"fileId\": {{$fromAI(\"fIleId\", \"Id of the newly created file on the server\", \"number\")}},\n    \"fileAction\": \"Append\",\n    \"chunkNo\": {{ $fromAI(\"chunkNumber\", \"which portion of the chunk is being uploaded, aka the chunk number. The first chunk is chunk 0\", \"number\", 0)}},\n    \"data64\": \"{{ $fromAI(\"data64\", \"Base 64 encoded file to upload\", \"string\") }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        -20
+      ],
+      "id": "de009749-0688-487c-9d3d-b774543ef0eb",
+      "name": "Data Import Upload the file to server",
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to run the ad hoc file upload and data import. To be run after the files are uploaded to the SPM server.\n\nWhen importing CSV data, you must provide exactly these 3 parameters:\n\n1. table: The target table name (string)\n   Example: \"Transactions\"\n\n2. columnMatchings: Map CSV columns to table fields (object with two arrays)\n   Example: {\n     \"columns\": [\"T_ID\", \"Date\", \"Customer\", \"P_ID\", \"Amount\"],  // CSV headers\n     \"matched\": [\"TransactionId\", \"TransactionDate\", \"CustomerName\", \"ParticipantId\", \"DealAmount\"]  // DB fields\n   }\n   \n3. filename: The CSV filename (string)  \n   Example: \"january_transactions.csv\"\n\nIMPORTANT: The arrays in columnMatchings must be the same length and order matters - first CSV column maps to first DB field.\n\nAll other parameters use default values - DO NOT include them.",
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v1/rpc/imports/runAdHoc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": null,\n  \"importType\": \"Text\",\n  \"hasHeader\": true,\n  \"table\": \"{{ $fromAI('table', 'Target table name', 'string') }}\",\n  \"tableType\": \"Data\",\n  \"tableEffectiveDated\": false,\n  \"columnMatchings\": {\n    \"columns\": [\n            \"TransID\",\n            \"Date\",\n            \"SalesRep\",\n            \"ProductID\",\n            \"SalesValue\"\n        ],\n    \"matched\": [\n            \"TransID\",\n            \"Date\",\n            \"SalesRep\",\n            \"ProductID\",\n            \"SalesValue\"\n        ]\n  },\n  \"listSubitems\": [],\n  \"subitemMap\": {},\n  \"dateFormat\": \"Default\",\n  \"addMember\": true,\n  \"updateExistingRows\": true,\n  \"useIncrementalImport\": false,\n  \"culture\": \"en-US\",\n  \"filename\": \"{{ $fromAI('file', 'CSV filename', 'string') }}\",\n  \"isLocal\": true,\n  \"version\": {\n    \"rowVersion\": 0\n  },\n  \"query\": null,\n  \"queryTimeout\": null,\n  \"importMethod\": 0,\n  \"model\": null,\n  \"isODBCTextDriver\": false,\n  \"selectRowNode\": \"\",\n  \"connectionString\": null,\n  \"useAdvanced\": null,\n  \"fileOverwrite\": true,\n  \"delimiter\": \",\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        -180
+      ],
+      "id": "dcba54f6-65b4-43ad-a65d-5b550d4ac208",
+      "name": "Data Import Run ad hoc process upload",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to run the ad hoc file upload and data import. To be run after the files are uploaded to the SPM server\n\nWhen importing CSV data, you must provide exactly these 3 parameters:\n\n1. table: The target table name (string)\n   Example: \"Transactions\"\n\n2. columnMatchings: Map CSV columns to table fields (object with two arrays)\n   Example: {\n     \"columns\": [\"T_ID\", \"Date\", \"Customer\", \"P_ID\", \"Amount\"],  // CSV headers\n     \"matched\": [\"TransactionId\", \"TransactionDate\", \"CustomerName\", \"ParticipantId\", \"DealAmount\"]  // DB fields\n   }\n   \n3. filename: The CSV filename (string)  \n   Example: \"january_transactions.csv\"\n\nIMPORTANT: The arrays in columnMatchings must be the same length and order matters - first CSV column maps to first DB field.\n\nAll other parameters use default values - DO NOT include them.",
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v1/rpc/imports/runAdHoc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "importType",
+              "value": "Text"
+            },
+            {
+              "name": "hasHeader",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "table",
+              "value": "={{ $fromAI('table', 'Target table name', 'string') }}"
+            },
+            {
+              "name": "tableType",
+              "value": "Data"
+            },
+            {
+              "name": "tableEffectiveDated",
+              "value": "={{ false }}"
+            },
+            {
+              "name": "columnMatchings",
+              "value": "={ \"columns\": {{  $fromAI('from', 'CSV columns', 'json') }},\n\"matched\": {{ $fromAI('to', 'Table columns', 'json') }}\n}"
+            },
+            {
+              "name": "listSubitems",
+              "value": "={{ [] }}"
+            },
+            {
+              "name": "subitemMap",
+              "value": "={{ {} }}"
+            },
+            {
+              "name": "dateFormat",
+              "value": "Default"
+            },
+            {
+              "name": "addMember",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "updateExistingRows",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "=useIncrementalImport",
+              "value": false
+            },
+            {
+              "name": "culture",
+              "value": "en-US"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $fromAI('file', 'CSV filename', 'string') }}"
+            },
+            {
+              "name": "isLocal",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "version",
+              "value": "={{ {\n\"rowVersion\": 0\n} }}"
+            },
+            {
+              "name": "query",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "queryTimeout",
+              "value": "=null"
+            },
+            {
+              "name": "importMethod",
+              "value": 0
+            },
+            {
+              "name": "model",
+              "value": "=null"
+            },
+            {
+              "name": "isODBCTextDriver",
+              "value": "={{ false }}"
+            },
+            {
+              "name": "selectRowNode",
+              "value": "={{null}}"
+            },
+            {
+              "name": "connectionString",
+              "value": "={{null}}"
+            },
+            {
+              "name": "useAdvanced",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "fileOverwrite",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "delimiter",
+              "value": ","
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1260,
+        -300
+      ],
+      "id": "107577ab-b8d1-49d6-8d78-07a8e969a3a8",
+      "name": "Data Import Run ad hoc process upload2",
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true,
+      "notes": "When importing CSV data, you must provide exactly these 3 parameters:\n\n1. table: The target table name (string)\n   Example: \"Transactions\"\n\n2. columnMatchings: Map CSV columns to table fields (object with two arrays)\n   Example: {\n     \"columns\": [\"T_ID\", \"Date\", \"Customer\", \"P_ID\", \"Amount\"],  // CSV headers\n     \"matched\": [\"TransactionId\", \"TransactionDate\", \"CustomerName\", \"ParticipantId\", \"DealAmount\"]  // DB fields\n   }\n   \n3. filename: The CSV filename (string)  \n   Example: \"january_transactions.csv\"\n\nIMPORTANT: The arrays in columnMatchings must be the same length and order matters - first CSV column maps to first DB field.\n\nAll other parameters use default values - DO NOT include them."
+    },
+    {
+      "parameters": {
+        "toolDescription": "Add a new record to a table",
+        "method": "POST",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{$fromAI(\"dataTable\", \"The table that the record will be inserted into\", \"string\")}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"rows\":{{$fromAI(\"rowsToAdd\", \"an array of arrays, where each sub array is the contains the data for the row that should be added, in the correct sequence. The correct format can be retrieved by making a get call to the table to understand what parameters are required to make a new record\")}},\"inputFormId\":0,\"effectiveDate\":null}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        -260
+      ],
+      "id": "9ea8bb8c-8d38-4e61-b89b-af9e86fbc642",
+      "name": "Add new record to table",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "gets all the data from the table",
+        "method": "POST",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{$fromAI(\"dataTable\", \"The table that the record will be inserted into\", \"string\")}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\"rows\":{{$fromAI(\"rowsToAdd\", \"an array of arrays, where each sub array is the contains the data for the row that should be added, in the correct sequence\")}},\"inputFormId\":0,\"effectiveDate\":null}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -20
+      ],
+      "id": "83ec2368-bde2-433e-a94a-85cc9fcd951f",
+      "name": "Add record to table",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "get models",
+        "url": "=https://spm.varicent.com/api/v1/modelthememap",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        -40
+      ],
+      "id": "7b3144c4-fad9-46ae-a35a-ea7ec8a4a1fe",
+      "name": "Get all models",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "CUD Operations\n",
+        "height": 520,
+        "width": 760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -360
+      ],
+      "id": "16c4c01f-8b6c-4401-89f4-58144c3330d8",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get all data from composer",
+        "url": "https://spm.varicent.com/api/v1/composer/search?type=Calculation",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Model\": \"InnoVyneDEMO\",\n  \"Content-Type\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        380,
+        -40
+      ],
+      "id": "9ca876c4-1d37-46d7-8b97-75b2b4f4b6c4",
+      "name": "Get all data from Composer",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to get information about a specific calculation",
+        "workflowId": {
+          "__rl": true,
+          "value": "Sx5IUoxGRlOqK1Z5",
+          "mode": "list",
+          "cachedResultName": "IV ICM Connector — Get Calculations data"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "calculationName": "={{ $fromAI('calculationName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "calculationName"
+          ],
+          "schema": [
+            {
+              "id": "calculationName",
+              "displayName": "calculationName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        60,
+        -40
+      ],
+      "id": "80c411a6-146f-4f07-83c8-d183619eb9cc",
+      "name": "Get Calculation"
+    },
+    {
+      "parameters": {
+        "path": "ec99b4b3-b348-4031-a270-27223502c4e8"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -260
+      ],
+      "id": "726209ae-5f8c-4da1-b42c-33b176686498",
+      "name": "MCP Server Trigger Get Data",
+      "webhookId": "ec99b4b3-b348-4031-a270-27223502c4e8"
+    }
+  ],
+  "connections": {
+    "Get Components": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Component": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update records": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Get all data from a table": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Import Create File On Server": {
+      "ai_tool": [
+        []
+      ],
+      "main": [
+        []
+      ]
+    },
+    "Data Import Upload the file to server": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Data Import Run ad hoc process upload": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Add new record to table": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Get all models": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all data from Composer": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calculation": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Get Data",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ce1b617d-776f-463d-874c-ce0f24518553",
+  "triggerCount": 1,
+  "tags": [
+    {
+      "createdAt": "2025-08-14T17:27:48.817Z",
+      "updatedAt": "2025-08-14T17:27:48.817Z",
+      "id": "dbeWvFo6JyXIZRnx",
+      "name": "Orbit Core"
+    }
+  ]
+}
