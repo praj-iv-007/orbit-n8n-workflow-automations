@@ -1,0 +1,452 @@
+{
+  "createdAt": "2025-07-03T13:12:26.621Z",
+  "updatedAt": "2025-07-15T13:56:09.000Z",
+  "id": "H7X4wpf8BA2KrBVL",
+  "name": "Data Import Workflow",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to push the newly created file onto the server",
+        "method": "PUT",
+        "url": "https://spm.varicent.com/api/v2/serverfiles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n\"Content-Type\": \"application/json\",\n\"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"fileId\": {{$fromAI(\"fIleId\", \"Id of the newly created file on the server\", \"number\")}},\n    \"fileAction\": \"Append\",\n    \"chunkNo\": {{ $fromAI(\"chunkNumber\", \"which portion of the chunk is being uploaded, aka the chunk number. The first chunk is chunk 0\", \"number\", 0)}},\n    \"data64\": \"{{ $fromAI(\"data64\", \"Base 64 encoded file to upload\", \"string\") }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        475
+      ],
+      "id": "b163524e-7b61-4a03-bff9-b649c5840280",
+      "name": "Data Import Upload the file to server",
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request to run the ad hoc file upload and data import. To be run after the files are uploaded to the SPM server. This can be checked by checking the \"isCompleted\" flag on the upload http requests or by getting the responses from the getServerFilesRequest and seeing if the uploaded file is on the server.\n\nWhen importing CSV data, you must provide exactly these 3 parameters:\n\n1. table: The target table name (string)\n   Example: \"Transactions\"\n\n2. columnMatchings: Map CSV columns to table fields (object with two arrays)\n   Example: {\n     \"columns\": [\"T_ID\", \"Date\", \"Customer\", \"P_ID\", \"Amount\"],  // CSV headers\n     \"matched\": [\"TransactionId\", \"TransactionDate\", \"CustomerName\", \"ParticipantId\", \"DealAmount\"]  // DB fields\n   }\n   \n3. filename: The CSV filename (string)  \n   Example: \"january_transactions.csv\"\n\nIMPORTANT: The arrays in columnMatchings must be the same length and order matters - first CSV column maps to first DB field.\n\nAll other parameters use default values - DO NOT include them.",
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v1/rpc/imports/runAdHoc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": null,\n  \"importType\": \"Text\",\n  \"hasHeader\": true,\n  \"table\": \"{{ $fromAI('table', 'Target table name', 'string') }}\",\n  \"tableType\": \"Data\",\n  \"tableEffectiveDated\": false,\n  \"columnMatchings\": {\n    \"columns\": [\n            \"TransID\",\n            \"Date\",\n            \"SalesRep\",\n            \"ProductID\",\n            \"SalesValue\"\n        ],\n    \"matched\": [\n            \"TransID\",\n            \"Date\",\n            \"SalesRep\",\n            \"ProductID\",\n            \"SalesValue\"\n        ]\n  },\n  \"listSubitems\": [],\n  \"subitemMap\": {},\n  \"dateFormat\": \"Default\",\n  \"addMember\": true,\n  \"updateExistingRows\": true,\n  \"useIncrementalImport\": false,\n  \"culture\": \"en-US\",\n  \"filename\": \"{{ $fromAI('file', 'CSV filename', 'string') }}\",\n  \"isLocal\": true,\n  \"version\": {\n    \"rowVersion\": 0\n  },\n  \"query\": null,\n  \"queryTimeout\": null,\n  \"importMethod\": 0,\n  \"model\": null,\n  \"isODBCTextDriver\": false,\n  \"selectRowNode\": \"\",\n  \"connectionString\": null,\n  \"useAdvanced\": null,\n  \"fileOverwrite\": true,\n  \"delimiter\": \",\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        715
+      ],
+      "id": "ed110744-bb15-4a38-b5f0-91280dcf31e5",
+      "name": "Data Import Run ad hoc process upload",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "fileName"
+            },
+            {
+              "name": "data"
+            },
+            {
+              "name": "tableName"
+            },
+            {
+              "name": "matchedColumns"
+            },
+            {
+              "name": "columns"
+            },
+            {
+              "name": "dateFormat"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -360
+      ],
+      "id": "06bae507-dc8c-45b7-9e2c-129bc384d99c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v2/serverfiles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n\"Content-Type\": \"application/json\",\n\"Model\": \"InnoVyneDEMO\"\n} ",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chunkSize",
+              "value": "140"
+            },
+            {
+              "name": "size",
+              "value": "140"
+            },
+            {
+              "name": "fileName",
+              "value": "={{ $json.fileName }}"
+            },
+            {
+              "name": "overwrite",
+              "value": "={{ true }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -280
+      ],
+      "id": "feff9cdb-d20a-46bd-8d38-e5b4661460be",
+      "name": "Create File space on Server",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://spm.varicent.com/api/v2/serverfiles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n\"Content-Type\": \"application/json\",\n\"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chunkNo",
+              "value": "0"
+            },
+            {
+              "name": "data64",
+              "value": "={{ $json.data[1].data }}"
+            },
+            {
+              "name": "fileId",
+              "value": "={{ $json.data[0].fileId }}"
+            },
+            {
+              "name": "tempFileName",
+              "value": "={{ $json.data[0].fileName }}"
+            },
+            {
+              "name": "fileAction",
+              "value": "Append"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -285
+      ],
+      "id": "c08d15e3-f1cb-4ae4-bfa8-b2ff1f703487",
+      "name": "Upload Data",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://spm.varicent.com/api/v1/rpc/imports/runAdHoc",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"Model\": \"InnoVyneDEMO\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": null,\n  \"importType\": \"Text\",\n  \"hasHeader\": true,\n  \"table\": \"{{ $json.data[0].tableName }}\",\n  \"tableType\": \"Data\",\n  \"tableEffectiveDated\": false,\n  \"columnMatchings\": {\n    \"columns\": {{ JSON.stringify($json.data[0].columns) }},\n    \"matched\": {{ JSON.stringify($json.data[0].matchedColumns) }}\n  },\n  \"listSubitems\": [],\n  \"subitemMap\": {},\n  \"dateFormat\": \"{{ $json.data[0].dateFormat || \"MonthFirst\"}}\",\n  \"addMember\": true,\n  \"updateExistingRows\": true,\n  \"useIncrementalImport\": false,\n  \"culture\": \"en-US\",\n  \"filename\": \"{{ $json.data[0].fileName }}\",\n  \"isLocal\": true,\n  \"version\": {\n    \"rowVersion\": 0\n  },\n  \"query\": null,\n  \"queryTimeout\": null,\n  \"importMethod\": 0,\n  \"model\": null,\n  \"isODBCTextDriver\": false,\n  \"selectRowNode\": \"\",\n  \"connectionString\": null,\n  \"useAdvanced\": null,\n  \"fileOverwrite\": true,\n  \"delimiter\": \",\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -360
+      ],
+      "id": "f2499934-2d09-4ab0-9fe4-ba5493287e9e",
+      "name": "Run adHoc data import",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a467cac1-4b50-4c41-a4e6-b1744a8bc6d3",
+              "leftValue": "={{ $json.isComplete }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -285
+      ],
+      "id": "c02f0c1e-0917-4e80-b172-038bdf0b514d",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        460,
+        -140
+      ],
+      "id": "2c39e431-1caf-4866-867d-883019d82e9d",
+      "name": "Merge File Data"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -285
+      ],
+      "id": "a9a23532-7e90-40b5-a1fd-3a65c0fc8d8b",
+      "name": "Aggregate File Data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1320,
+        -360
+      ],
+      "id": "99ca6c2b-29ca-48c9-92c6-00f2f95e458f",
+      "name": "Merge Adhoc Data"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -360
+      ],
+      "id": "4d8dfd50-42f6-4f04-9025-90740c0b7acf",
+      "name": "Aggregate Adhoc Data"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create File space on Server",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge File Data",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge Adhoc Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create File space on Server": {
+      "main": [
+        [
+          {
+            "node": "Merge File Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge File Data": {
+      "main": [
+        [
+          {
+            "node": "Aggregate File Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate File Data": {
+      "main": [
+        [
+          {
+            "node": "Upload Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Adhoc Data": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Adhoc Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge Adhoc Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate Adhoc Data": {
+      "main": [
+        [
+          {
+            "node": "Run adHoc data import",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run adHoc data import": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "fileName": "region_test_data_0001.csv",
+          "data": "UmVnaW9uTmFtZSxEZXNjcmlwdGlvbixNYW5hZ2VyLERhdGUKTUFSS0hBTSxDb3ZlcnMgdGhlIHdob2xlIE1hcmtoYW0sSm9obnkgYm9pLDcvMTIvMjAxNQpDSElDQUdPLENvdmVycyB0aGUgd2hvbGUgY2hpLERlbWFyaXVzIEpvaG5zb24sNy8xMi8yMDE1",
+          "tableName": "Region",
+          "dateFormat": "MonthFirst",
+          "matchedColumns": [
+            "RegionName",
+            "Description",
+            "Manager",
+            "Date"
+          ],
+          "columns": [
+            "RegionName",
+            "Description",
+            "Manager",
+            "Date"
+          ]
+        }
+      }
+    ]
+  },
+  "versionId": "eb017797-12b8-4fea-819c-c24ba10879bb",
+  "triggerCount": 0,
+  "tags": []
+}
