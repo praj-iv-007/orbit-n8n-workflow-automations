@@ -1,0 +1,1707 @@
+{
+  "createdAt": "2025-06-30T18:13:20.799Z",
+  "updatedAt": "2025-07-15T13:56:16.000Z",
+  "id": "lPNDD055bMpjlsA3",
+  "name": "Workflow Dump/Graveyard",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "user-input",
+              "name": "userInput",
+              "type": "string",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "id": "session-id",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $json.sessionId }}"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "type": "string",
+              "value": "={{ $now.toISOString() }}"
+            },
+            {
+              "id": "is-config",
+              "name": "isConfiguration",
+              "type": "boolean",
+              "value": "={{ $json.chatInput.toLowerCase().includes('configure') || $json.chatInput.toLowerCase().includes('setup') || $json.chatInput.toLowerCase().includes('add table') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30f2afff-5381-4ea1-ae30-b5cf5c5e6bad",
+      "name": "Process Input",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -60,
+        120
+      ],
+      "typeVersion": 3.4,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isConfiguration }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4e77e43a-43c8-4c40-bf0a-e1f6a4d60545",
+      "name": "Route to Configuration or Chat",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        140,
+        120
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "config-response",
+              "name": "response",
+              "type": "string",
+              "value": "Configuration mode activated. Please provide the table/calculation details in this format:\n\nTable Name: [name]\nDescription: [description]\nVaricent Endpoint: [API endpoint]\nCalculation Type: [type]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "73344d19-8f6b-468d-bc2f-c5d84e5acb1d",
+      "name": "Handle Configuration",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        340,
+        20
+      ],
+      "typeVersion": 3.4,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "available-tables",
+              "name": "availableTables",
+              "type": "array",
+              "value": "=[\n  {\n    \"name\": \"commission_data\",\n    \"description\": \"Sales commission calculations and payouts\",\n    \"endpoint\": \"/api/v1/commission\",\n    \"type\": \"calculation\"\n  },\n  {\n    \"name\": \"quota_performance\",\n    \"description\": \"Sales quota vs actual performance metrics\",\n    \"endpoint\": \"/api/v1/quota\",\n    \"type\": \"analysis\"\n  },\n  {\n    \"name\": \"territory_data\",\n    \"description\": \"Sales territory assignments and performance\",\n    \"endpoint\": \"/api/v1/territory\",\n    \"type\": \"table\"\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "914f1538-3313-46fa-a5b9-b56218428302",
+      "name": "Load Varicent Context",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        340,
+        220
+      ],
+      "typeVersion": 3.4,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.userInput }}",
+        "options": {
+          "systemMessage": "=You are a Varicent compensation analytics assistant. Help users analyze sales data, detect anomalies, and provide insights about compensation models.\n\nAvailable Varicent tables and calculations:\n{{ $('Load Varicent Context').item.json.availableTables.map(t => `- ${t.name}: ${t.description}`).join('\\n') }}\n\nUser types:\n- Clients (sales people): Provide data insights, commission calculations, quota analysis\n- Configurators (managers): Help with compensation model changes and advanced analytics\n\nAlways ask clarifying questions about:\n- Time periods for analysis\n- Specific metrics or KPIs needed\n- Territory or team scope\n- Type of analysis (anomaly detection, trend analysis, etc.)\n\nUse the available tools to fetch data from Varicent APIs and provide actionable insights."
+        }
+      },
+      "id": "83fee95b-f13c-4bcf-b98f-13cf507d6bbd",
+      "name": "Varicent AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        540,
+        220
+      ],
+      "typeVersion": 1.7,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Process Input').item.json.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "id": "45ed2126-1fba-43e0-8134-30ab16005e90",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        400,
+        420
+      ],
+      "typeVersion": 1.3,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "chatgpt-4o-latest"
+        },
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.1
+        }
+      },
+      "id": "dcd37968-84e6-466a-a7b2-1739036e70e8",
+      "name": "OpenAI GPT-4o",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        540,
+        420
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "1cac3fb2-9126-460b-a116-e6454af6ff62",
+      "name": "Varicent API Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolHttp",
+      "position": [
+        840,
+        120
+      ],
+      "typeVersion": 1.1,
+      "credentials": {},
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "name": "table_lookup",
+        "description": "Look up available Varicent tables and their configurations"
+      },
+      "id": "0fd95f7c-7bcd-48dc-b04c-615fef3b854b",
+      "name": "Table Lookup Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "position": [
+        740,
+        280
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "name": "anomaly_detector",
+        "description": "Detect anomalies in compensation data. Provide data array and threshold parameters.",
+        "language": "javascript"
+      },
+      "id": "b82197ff-0ef0-46fe-bf5c-5d6f518eb223",
+      "name": "Anomaly Detection Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "position": [
+        740,
+        420
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "name": "compensation_analyzer",
+        "description": "Analyze compensation model changes and provide recommendations",
+        "language": "javascript"
+      },
+      "id": "8232ca7b-5ebe-4302-b45f-8b32ac9d7188",
+      "name": "Compensation Analysis Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "position": [
+        740,
+        580
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "formatted-output",
+              "name": "output",
+              "type": "string",
+              "value": "={{ $('Varicent AI Agent').item.json.output }}"
+            },
+            {
+              "id": "session-id-out",
+              "name": "sessionId",
+              "type": "string",
+              "value": "={{ $('Process Input').item.json.sessionId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "57db7036-7d0f-4c5c-8098-3e4784b351f1",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        940,
+        220
+      ],
+      "typeVersion": 3.4,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "keepEverything",
+        "options": {}
+      },
+      "id": "0cab86fb-80b4-429f-b698-0d59809bd496",
+      "name": "Merge Responses",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        740,
+        20
+      ],
+      "typeVersion": 2.1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# Varicent AI Agent Workflow\n\n**Purpose**: Intelligent assistant for Varicent compensation analytics\n\n**Users**:\n- Clients (sales people): Get commission data, quota analysis\n- Configurators (managers): Setup tables, model changes\n\n**Features**: Anomaly detection, trend analysis, API integration",
+        "height": 200,
+        "width": 500,
+        "color": 7
+      },
+      "id": "703f9355-c298-4d8e-acf1-858f41f484a0",
+      "name": "Sticky Note - Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -300,
+        -120
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Configuration Mode\n\nTrigger words: configure, setup, add table\n\nAllows managers to add new Varicent table/calculation references for the AI agent to use.",
+        "height": 150,
+        "width": 300,
+        "color": 3
+      },
+      "id": "afd185d8-739d-4141-8da5-cbb472d97068",
+      "name": "Sticky Note - Configuration",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -120
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent Tools\n\n1. **Varicent API Tool**: Direct API calls to fetch data\n2. **Table Lookup Tool**: Find available tables/calculations\n3. **Anomaly Detection Tool**: Statistical anomaly detection\n4. **Analysis Tool**: Compensation model analysis\n\nAll tools use JavaScript for flexibility and can be extended.",
+        "height": 200,
+        "width": 400,
+        "color": 4
+      },
+      "id": "3b720178-af80-41e5-97b3-a85b224ecc63",
+      "name": "Sticky Note - AI Tools",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        600,
+        -120
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Memory System\n\n- Window Buffer Memory (20 messages)\n- Session-based context retention\n- Ready for Pinecone vector DB migration\n- Conversation continuity per user",
+        "height": 150,
+        "width": 350,
+        "color": 5
+      },
+      "id": "a63f61c0-91aa-4e5a-90f3-97487494fbf3",
+      "name": "Sticky Note - Memory & Context",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        340,
+        680
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Future Roadmap\n\n- Slack/Teams webhook integration\n- Pinecone vector DB for enhanced memory\n- Multi-workflow architecture\n- Advanced ML anomaly detection\n- Real-time alerts\n- Custom dashboard integration",
+        "height": 200,
+        "width": 300,
+        "color": 6
+      },
+      "id": "08d618df-2f55-46e4-90d3-85bacc0716fb",
+      "name": "Sticky Note - Future Enhancements",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        840,
+        -120
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "f635c464-5e3a-4837-a2de-eb2d306fab6e",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "name": "Tool Trigger",
+      "position": [
+        700,
+        1560
+      ],
+      "typeVersion": 1.1,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "cba6655b-fa0a-4e27-8cc1-775dd1460585",
+      "type": "n8n-nodes-base.code",
+      "name": "Validate Input",
+      "position": [
+        900,
+        1560
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.validated === true}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9967e5e2-e2b9-4c52-a55c-3b9669c4989d",
+      "type": "n8n-nodes-base.if",
+      "name": "Validation Success?",
+      "position": [
+        1100,
+        1560
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "2e894fc7-261d-40ae-847f-f08c05627ab7",
+      "type": "n8n-nodes-base.code",
+      "name": "Build Query",
+      "position": [
+        1300,
+        1500
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.credentials.varicent_base_url}}{{$json.endpoint}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.credentials.varicent_api_key}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "994fbc61-900f-4988-b2ed-0fcb9a9cb9d9",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Execute Query",
+      "position": [
+        1500,
+        1500
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "typeVersion": 4.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "eb0c341d-9a03-482e-b339-54a3764b511e",
+      "type": "n8n-nodes-base.code",
+      "name": "Process Results",
+      "position": [
+        1700,
+        1500
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "80fd29b3-dab4-424f-ad4b-85d1dba87f56",
+      "type": "n8n-nodes-base.code",
+      "name": "Handle Query Error",
+      "position": [
+        1500,
+        1660
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "008f7985-3d98-4f66-9c29-32c9e8f620a4",
+      "type": "n8n-nodes-base.code",
+      "name": "Handle Validation Error",
+      "position": [
+        1300,
+        1660
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "passThrough"
+      },
+      "id": "45ee042d-59e1-4529-87d7-71cff32c7df4",
+      "type": "n8n-nodes-base.merge",
+      "name": "Merge Error Paths",
+      "position": [
+        1700,
+        1660
+      ],
+      "typeVersion": 3.1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "path": "connect-model",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {
+          "responsePropertyName": "data"
+        }
+      },
+      "id": "b2f0773b-99b4-4ee5-a30d-a943c068e64c",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Model Connection Webhook",
+      "position": [
+        -220,
+        1100
+      ],
+      "typeVersion": 2,
+      "webhookId": "f4bd6f05-550e-4e9d-812b-702f84a2391f",
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.varicent_base_url}}/api/v1/customtables",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.varicent_api_key}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "bb5cf498-0691-4bf3-b4a6-27b16ee80a42",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Get All Custom Tables",
+      "position": [
+        180,
+        980
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.varicent_base_url}}/api/v1/calculations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.varicent_api_key}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "9e8d3d99-2d18-4eb7-bc54-fdb7450dfed3",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Get All Calculations",
+      "position": [
+        260,
+        1220
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "multiplex"
+      },
+      "id": "002a2769-d6fe-4a82-949d-3c801702303b",
+      "type": "n8n-nodes-base.merge",
+      "name": "Merge Results",
+      "position": [
+        580,
+        1060
+      ],
+      "typeVersion": 3.1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.error === undefined}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8793e9a-4bfb-4d90-9463-4f88b3464496",
+      "type": "n8n-nodes-base.if",
+      "name": "Check Results",
+      "position": [
+        800,
+        1280
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "b336cf33-23ca-4ccf-8974-a30e1b66f29d",
+      "type": "n8n-nodes-base.code",
+      "name": "Process Table Metadata",
+      "position": [
+        1060,
+        1340
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.type}}",
+              "operation": "equals",
+              "value2": "table"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "74fac192-2afe-461f-aa40-42d1b38d3f03",
+      "type": "n8n-nodes-base.if",
+      "name": "Split by Type",
+      "position": [
+        980,
+        1060
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.credentials.varicent_base_url}}/api/v1/customtables/{{$json.name}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.credentials.varicent_api_key}}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "5a1e2428-55f4-4ff2-8df5-2aa6b987163e",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Get Table Schema",
+      "position": [
+        1220,
+        1000
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "mode": "passThrough"
+      },
+      "id": "45bcb752-0235-49f2-a9bb-0d5a23a8944b",
+      "type": "n8n-nodes-base.merge",
+      "name": "Merge All Data",
+      "position": [
+        1380,
+        1100
+      ],
+      "typeVersion": 3.1,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "d7717f1e-b9e1-4c1f-af1b-82884089fb96",
+      "type": "n8n-nodes-base.code",
+      "name": "Create Context Documents",
+      "position": [
+        1580,
+        1100
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "a043d66f-b798-4ab6-836b-094c545860c2",
+      "type": "n8n-nodes-base.code",
+      "name": "Save Context Map",
+      "position": [
+        1780,
+        1100
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "1741be61-d693-45d4-aa42-2b6b98f5ff7f",
+      "type": "n8n-nodes-base.code",
+      "name": "Handle Error",
+      "position": [
+        80,
+        1280
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "2b9c70cc-7c8f-4c2d-8cff-1c07eeec39b6",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Success Response",
+      "position": [
+        1980,
+        1100
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{$json.statusCode || 500}}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e9ca053c-971e-4c42-a520-29eb2500124a",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Error Response",
+      "position": [
+        380,
+        1360
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "32cb4743-c3b1-4b33-b18c-f04fabaa27bf",
+      "type": "n8n-nodes-base.code",
+      "name": "Format API Response",
+      "position": [
+        320,
+        980
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "fefec5ad-fb4f-47fc-9c49-e6de5b2ba64f",
+      "type": "n8n-nodes-base.code",
+      "name": "Validate Input1",
+      "position": [
+        0,
+        1040
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Model Discovery and Indexing\n",
+        "height": 480,
+        "width": 2520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -300,
+        940
+      ],
+      "typeVersion": 1,
+      "id": "5dabb87c-bc02-4d74-b4f3-9bf2d3285a65",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Query Data Tool\n",
+        "height": 360,
+        "width": 1360
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        820,
+        1700
+      ],
+      "typeVersion": 1,
+      "id": "a766c5e8-defd-4b44-9112-7d383d68fcc0",
+      "name": "Sticky Note1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "9ea2e140-3b27-4fd7-bf84-29d394627a92",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "name": "Daily Anomaly Check",
+      "position": [
+        -1620,
+        1540
+      ],
+      "typeVersion": 1.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "e177e58e-df40-4855-8f54-9d51198f99fc",
+      "type": "n8n-nodes-base.manualTrigger",
+      "name": "Manual Trigger",
+      "position": [
+        -1620,
+        1640
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "passThrough"
+      },
+      "id": "6640f9ab-fdb9-4f83-91e8-cb9817e1d74f",
+      "type": "n8n-nodes-base.merge",
+      "name": "Merge Triggers",
+      "position": [
+        -1420,
+        1580
+      ],
+      "typeVersion": 3.1,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "35035a93-564b-4979-81c9-4adc8cb16e34",
+      "type": "n8n-nodes-base.code",
+      "name": "Load Active Clients",
+      "position": [
+        -1220,
+        1580
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.error === undefined}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37826894-ec98-4a03-8bdd-69c13566dd6e",
+      "type": "n8n-nodes-base.if",
+      "name": "Client Load Success?",
+      "position": [
+        -1020,
+        1580
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.credentials.varicent_base_url}}/api/v1/customtables/{{$json.anomalyConfig.tables.payments}}/inputforms/1/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.credentials.varicent_api_key}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "400cbed4-72c7-4949-845e-a8e0fa762937",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Get Recent Payments",
+      "position": [
+        -820,
+        1440
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.credentials.varicent_base_url}}/api/v1/customtables/{{$json.anomalyConfig.tables.sales}}/inputforms/1/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.credentials.varicent_api_key}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "da3e60bf-4e9c-4ff2-860a-054334535d4b",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Check Data Quality",
+      "position": [
+        -820,
+        1600
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{$json.credentials.varicent_base_url}}/api/v1/customtables/{{$json.anomalyConfig.tables.payments}}/inputforms/1/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$json.credentials.varicent_api_key}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ad5959b-6ae9-40db-91fb-eeef3c28d39b",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Get Historical Data",
+      "position": [
+        -820,
+        1740
+      ],
+      "typeVersion": 4.2,
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "81a4de48-396f-4576-ba9b-39e7de37a6b5",
+      "type": "n8n-nodes-base.code",
+      "name": "Merge & Prepare Data",
+      "position": [
+        -620,
+        1580
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "e0c4d679-7ef5-4022-9346-7bd9eb1b4c6a",
+      "type": "n8n-nodes-base.code",
+      "name": "Analyze for Anomalies",
+      "position": [
+        -420,
+        1580
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.anomaliesFound}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ce89bf43-73d2-4a4d-badc-d0ffa2e8ba07",
+      "type": "n8n-nodes-base.if",
+      "name": "Anomalies Found?",
+      "position": [
+        -220,
+        1580
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "5e4c2144-142f-43c0-8b80-fd74e4867b61",
+      "type": "n8n-nodes-base.code",
+      "name": "Create Alert Message",
+      "position": [
+        20,
+        1520
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$vars.alert_from_email || 'anomaly-detector@spm-icm.com'}}",
+        "toEmail": "={{$json.to.join(', ')}}",
+        "subject": "={{$json.subject}}",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "replyTo": "={{$vars.alert_reply_email || 'support@spm-icm.com'}}"
+        }
+      },
+      "id": "487e2103-ca32-47ab-abbb-139e5e0006c5",
+      "type": "n8n-nodes-base.emailSend",
+      "name": "Send Alert Email",
+      "position": [
+        260,
+        1520
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "29137fa3-b157-4359-8da7-e643c35e3727",
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {},
+      "id": "07268ff7-31b9-4c82-9998-79f69a6e7fbe",
+      "type": "n8n-nodes-base.code",
+      "name": "Log & Store Results",
+      "position": [
+        120,
+        1720
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "id": "06bc6b98-026d-4687-9f6f-85c8e192f18b",
+      "type": "n8n-nodes-base.code",
+      "name": "Handle Errors",
+      "position": [
+        -620,
+        1780
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.isError}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6655bcd7-bab1-4845-9ef8-b42a42cdcb0f",
+      "type": "n8n-nodes-base.if",
+      "name": "Should Notify Error?",
+      "position": [
+        -420,
+        1840
+      ],
+      "typeVersion": 2.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$vars.alert_from_email || 'anomaly-detector@spm-icm.com'}}",
+        "toEmail": "={{$json.to.join(', ')}}",
+        "subject": "={{$json.subject}}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "9ca4064d-daa1-43d4-9d8d-41ed848abe82",
+      "type": "n8n-nodes-base.emailSend",
+      "name": "Send Error Email",
+      "position": [
+        -140,
+        1840
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "eeadd86e-cc23-4320-bef5-7ce3e8e2df3c",
+      "disabled": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "## Varicent Anomaly Detection\n",
+        "height": 560,
+        "width": 2260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1740,
+        1440
+      ],
+      "typeVersion": 1,
+      "id": "ab8b8510-0f49-4a8d-803b-128cd4a29989",
+      "name": "Sticky Note2",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "a29d464f-d5c4-478b-af9b-29cb391e55ef",
+      "type": "n8n-nodes-base.code",
+      "name": "Format API Response1",
+      "position": [
+        320,
+        1140
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Process Input": {
+      "main": [
+        [
+          {
+            "node": "Route to Configuration or Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route to Configuration or Chat": {
+      "main": [
+        [
+          {
+            "node": "Handle Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Varicent Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Configuration": {
+      "main": [
+        [
+          {
+            "node": "Merge Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Varicent Context": {
+      "main": [
+        [
+          {
+            "node": "Varicent AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Varicent AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Responses",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Tool Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Validation Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Success?": {
+      "main": [
+        [
+          {
+            "node": "Build Query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Query": {
+      "main": [
+        [
+          {
+            "node": "Execute Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Query": {
+      "main": [
+        [
+          {
+            "node": "Process Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Query Error": {
+      "main": [
+        [
+          {
+            "node": "Merge Error Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Validation Error": {
+      "main": [
+        [
+          {
+            "node": "Handle Query Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model Connection Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Input1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Custom Tables": {
+      "main": [
+        [
+          {
+            "node": "Format API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Calculations": {
+      "main": [
+        [
+          {
+            "node": "Format API Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Process Table Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Table Metadata": {
+      "main": [
+        [
+          {
+            "node": "Split by Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Data": {
+      "main": [
+        [
+          {
+            "node": "Create Context Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Context Documents": {
+      "main": [
+        [
+          {
+            "node": "Save Context Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Context Map": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Error": {
+      "main": [
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input1": {
+      "main": [
+        [
+          {
+            "node": "Get All Custom Tables",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get All Calculations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Anomaly Check": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Load Active Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Active Clients": {
+      "main": [
+        [
+          {
+            "node": "Client Load Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Client Load Success?": {
+      "main": [
+        [
+          {
+            "node": "Check Data Quality",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Historical Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Data Quality": {
+      "main": [
+        [
+          {
+            "node": "Merge & Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Historical Data": {
+      "main": [
+        [
+          {
+            "node": "Handle Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge & Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Analyze for Anomalies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze for Anomalies": {
+      "main": [
+        [
+          {
+            "node": "Anomalies Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomalies Found?": {
+      "main": [
+        [
+          {
+            "node": "Create Alert Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log & Store Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log & Store Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Alert Message": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Errors": {
+      "main": [
+        [
+          {
+            "node": "Should Notify Error?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log & Store Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Notify Error?": {
+      "main": [
+        [
+          {
+            "node": "Send Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Response1": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "2222452d-2bb1-49ef-aaf0-e370f3cc2ff4",
+  "triggerCount": 0,
+  "tags": []
+}
