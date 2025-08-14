@@ -1,0 +1,1312 @@
+{
+  "createdAt": "2025-07-15T18:03:25.444Z",
+  "updatedAt": "2025-07-18T17:33:09.000Z",
+  "id": "D7ZYpYUSUsxcYRUa",
+  "name": "Get tables Calcs and Data Stores",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"userId\": \"c30cc857-9457-469e-9792-5473f262d1b5\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -260,
+        -125
+      ],
+      "id": "b779cd39-c592-4dc8-99a6-da402ddf80a7",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "spm_table",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "organization_id",
+              "keyValue": "={{ $json.organization_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -600
+      ],
+      "id": "5a7c1656-7e55-4978-80bd-4e80b2ca50d2",
+      "name": "Get Table Data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "user",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -125
+      ],
+      "id": "123a8034-680c-4158-aea9-a97b4b50d329",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "spm_calculation",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "organization_id",
+              "keyValue": "={{ $json.organization_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        180,
+        -120
+      ],
+      "id": "ef908777-2ea8-48ad-8098-97211131e576",
+      "name": "Get Calculation Data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "spm_data_store",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "organization_id",
+              "keyValue": "={{ $json.organization_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        180,
+        350
+      ],
+      "id": "b1c6049c-9fa3-47d1-a851-6d19108374cb",
+      "name": "Get Data Store Data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4baaabc7-5e4d-40ac-8b52-4e06493d7c9e",
+              "leftValue": "={{ $json?.data_store }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        340
+      ],
+      "id": "86efb6f0-60b3-47c5-a4fb-889e6996d2e8",
+      "name": "If data stores are stored",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4baaabc7-5e4d-40ac-8b52-4e06493d7c9e",
+              "leftValue": "={{ $json?.calculation_list }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        -120
+      ],
+      "id": "9329f5ed-ac90-44f3-a35c-3ae824b9edfa",
+      "name": "If calculations are stored",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        840,
+        75
+      ],
+      "id": "c1e0d9e9-4c65-4585-abee-5231a353fbcf",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4baaabc7-5e4d-40ac-8b52-4e06493d7c9e",
+              "leftValue": "={{ $json?.table_list }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        -600
+      ],
+      "id": "8cb47f2c-ee88-4bb0-ae22-fd11becd6a29",
+      "name": "If tables are stored",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        75
+      ],
+      "id": "b9fd386b-9999-4c92-9102-9d45d8cf8dff",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "url": "https://spm.varicent.com/api/v1/composer/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        75
+      ],
+      "id": "1b637f2e-c4cb-4746-8de0-3f6cd0b1c823",
+      "name": "Get Composer",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6efa8c70-7944-48dd-8df2-3d53ecc3c805",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "Table",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c5cf2a7e-0163-4e2f-bc2b-d56b76d681c3",
+              "leftValue": "={{ $json.canView }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        -125
+      ],
+      "id": "1cbc82ce-841c-4a04-821d-9c0b6fe6e095",
+      "name": "Filter Table"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6efa8c70-7944-48dd-8df2-3d53ecc3c805",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "DataStore",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "069a4157-6590-491f-8573-567dbd42ef83",
+              "leftValue": "={{ $json.canView }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        275
+      ],
+      "id": "04852b74-0292-4388-a2e2-ee3e3172e205",
+      "name": "Filter Data Stores"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6efa8c70-7944-48dd-8df2-3d53ecc3c805",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "Calculation",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "5dd6f858-be91-480a-a8c9-e7fdd989cd29",
+              "leftValue": "={{ $json.canView }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        75
+      ],
+      "id": "39c8a2fa-5edf-4221-ad4f-8f71e90695c5",
+      "name": "Filter Calculations"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  details: $json.details,\n  id: $json.id,\n  name: $json.name\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        75
+      ],
+      "id": "63ef44f9-3080-40ba-9394-0490539c3432",
+      "name": "Format Composer Response"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "calculationList",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        80
+      ],
+      "id": "9fd52f81-66d0-4530-992a-68e2e08a9365",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {callComposer: true}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        75
+      ],
+      "id": "54a52711-bbbb-41fd-8747-4f492ee4b2fb",
+      "name": "Call Composer for Calculation"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {callComposer: true}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        475
+      ],
+      "id": "5c31b911-514b-4070-8101-a83b347ec42a",
+      "name": "Call Composer for Data Store"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "43154b9e-ead1-4520-af89-3f14f90c84b0",
+              "leftValue": "={{ $('Call Composer for Table').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1500,
+        -125
+      ],
+      "id": "3d56291a-cfe8-4b7d-a6ec-52a5524e1dc8",
+      "name": "Missing a table list"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {callComposer: true}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        -500
+      ],
+      "id": "ea03de6c-5eff-44f7-af1a-e9d587616c92",
+      "name": "Call Composer for Table"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e83dea69-1ba8-4b31-9f90-c4c9c64ed5d1",
+              "leftValue": "={{ $('Call Composer for Calculation').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1500,
+        75
+      ],
+      "id": "b2f89141-77a6-495e-8645-552c507cbaad",
+      "name": "Missing a calculation list"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  details: $json.details,\n  id: $json.id,\n  name: $json.name\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        -125
+      ],
+      "id": "2b2d10aa-8d8a-48f6-af27-2794315d9d95",
+      "name": "Format Composer Response1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "tableList",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        -125
+      ],
+      "id": "df33d291-0ece-4b46-81de-1e2b2f1da395",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  details: $json.details,\n  id: $json.id,\n  name: $json.name\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        275
+      ],
+      "id": "a34ae5b4-3423-4694-bc55-4cb6a8087577",
+      "name": "Format Composer Response2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "dataStoreList",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        275
+      ],
+      "id": "ff428770-a757-4fda-bf90-19496c47c763",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4baaabc7-5e4d-40ac-8b52-4e06493d7c9e",
+              "leftValue": "={{ $('Call Composer for Data Store').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1500,
+        275
+      ],
+      "id": "e059eca7-a47d-482b-9071-57fcf139ad1e",
+      "name": "Missing a data store list"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        840,
+        -300
+      ],
+      "id": "d3934b56-6d98-40e5-898a-d28f3eb51c28",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2440,
+        -120
+      ],
+      "id": "30ae79d6-6d49-4101-8722-9b68432e7d81",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6efa8c70-7944-48dd-8df2-3d53ecc3c805",
+              "leftValue": "={{ $json.tableList }}",
+              "rightValue": "Table",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fcad39a8-3493-44b0-874f-c681d1ddc1fa",
+              "leftValue": "={{ $json.calculationList }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "36bfc5fd-542d-4237-b552-740ea2e0945c",
+              "leftValue": "={{ $json.dataStoreList }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        -300
+      ],
+      "id": "08cd09b8-abda-45f3-ad3b-ff7b9f11e15e",
+      "name": "Filter Table1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  tableList: $json.table_list\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        -700
+      ],
+      "id": "8c7478ba-cae8-47a5-bde2-104389467601",
+      "name": "Return table list"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  calculationList: $json.calculation_list\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        -300
+      ],
+      "id": "1f3fdf1e-9db3-485a-9d45-2152b190897e",
+      "name": "return calculation list"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  dataStoreList: $json.data_store\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        275
+      ],
+      "id": "06e1e586-c863-4638-8f94-1faffcb77f71",
+      "name": "Return Data Store list"
+    },
+    {
+      "parameters": {
+        "tableId": "spm_table",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "table_list",
+              "fieldValue": "={{ $json.tableList }}"
+            },
+            {
+              "fieldId": "organization_id",
+              "fieldValue": "810ec2ae-76a8-4765-86fb-95c8b25ac4b3"
+            },
+            {
+              "fieldId": "model_id",
+              "fieldValue": "b4d05fbf-d3de-4783-8e65-d46775b22dba"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        120
+      ],
+      "id": "70bf6b65-1e51-4d78-bb44-5a4584336734",
+      "name": "Update Table List",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "spm_calculation",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "calculation_list",
+              "fieldValue": "={{ $json.calculationList }}"
+            },
+            {
+              "fieldId": "organization_id",
+              "fieldValue": "810ec2ae-76a8-4765-86fb-95c8b25ac4b3"
+            },
+            {
+              "fieldId": "model_id",
+              "fieldValue": "b4d05fbf-d3de-4783-8e65-d46775b22dba"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        300
+      ],
+      "id": "7a3dd9d5-19bd-40eb-aa3d-c9b2819a9282",
+      "name": "Update Calculation List",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "spm_data_store",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "data_store",
+              "fieldValue": "={{ $json.dataStoreList }}"
+            },
+            {
+              "fieldId": "organization_id",
+              "fieldValue": "810ec2ae-76a8-4765-86fb-95c8b25ac4b3"
+            },
+            {
+              "fieldId": "model_id",
+              "fieldValue": "b4d05fbf-d3de-4783-8e65-d46775b22dba"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        460
+      ],
+      "id": "2542fec8-bb8c-495b-9f29-384c34d49d7c",
+      "name": "Update Data Store List",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VZZefPmovTR4LU9e",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Get Table Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Calculation Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Data Store Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data Store Data": {
+      "main": [
+        [
+          {
+            "node": "If data stores are stored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table Data": {
+      "main": [
+        [
+          {
+            "node": "If tables are stored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calculation Data": {
+      "main": [
+        [
+          {
+            "node": "If calculations are stored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If calculations are stored": {
+      "main": [
+        [
+          {
+            "node": "return calculation list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Composer for Calculation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If data stores are stored": {
+      "main": [
+        [
+          {
+            "node": "Return Data Store list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Composer for Data Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If tables are stored": {
+      "main": [
+        [
+          {
+            "node": "Return table list",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Composer for Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Get Composer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Composer": {
+      "main": [
+        [
+          {
+            "node": "Missing a table list",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Missing a calculation list",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Missing a data store list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Table": {
+      "main": [
+        [
+          {
+            "node": "Format Composer Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Composer Response": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Calculations": {
+      "main": [
+        [
+          {
+            "node": "Format Composer Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Data Stores": {
+      "main": [
+        [
+          {
+            "node": "Format Composer Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Composer for Calculation": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Call Composer for Data Store": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Missing a table list": {
+      "main": [
+        [
+          {
+            "node": "Filter Table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Call Composer for Table": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Missing a calculation list": {
+      "main": [
+        [
+          {
+            "node": "Filter Calculations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Composer Response1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Composer Response2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Missing a data store list": {
+      "main": [
+        [
+          {
+            "node": "Filter Data Stores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Filter Table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Update Table List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "Update Calculation List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 3
+          },
+          {
+            "node": "Update Data Store List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Table1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return table list": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "return calculation list": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Return Data Store list": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "userId": "c30cc857-9457-469e-9792-5473f262d1b5"
+        }
+      }
+    ]
+  },
+  "versionId": "ff8a95a4-c15b-4543-a882-48e611846584",
+  "triggerCount": 0,
+  "tags": []
+}
