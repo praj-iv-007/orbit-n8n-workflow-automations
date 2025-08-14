@@ -1,0 +1,1272 @@
+{
+  "createdAt": "2025-06-11T15:30:05.083Z",
+  "updatedAt": "2025-08-05T19:40:35.000Z",
+  "id": "MKUId4pz7cgsj0DI",
+  "name": "SPM AI Connector",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -740,
+        -560
+      ],
+      "id": "c36116a6-6f0c-49d5-93ae-52f8207392aa",
+      "name": "When chat message received",
+      "webhookId": "18060a53-f531-4f5e-8b7f-d6d06939e452"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-20250514",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4"
+        },
+        "options": {
+          "maxTokensToSample": 4096
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        580,
+        -480
+      ],
+      "id": "d2234377-019c-45d9-9ddb-c02d95b9bb82",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "eT6fwac9owUGAq1q",
+          "name": "om-anthropickey"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId || $json.data.sessionId  || $json.data[1].sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        700,
+        -480
+      ],
+      "id": "0e67eedb-1532-4325-81fb-25ff0f23fc6b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Message: {{ $json?.data[1]?.chatInput ?? $json.chatInput }}\nSupplemental Information: {{ JSON.stringify($json?.data[0]?.composerResponse || {}) }}",
+        "options": {
+          "systemMessage": "You are an expert on SPM systems and know how to use the varicent system very well. You also have access to a vector database store that contains information about standard operating procedures that you can check out. When a user makes a request to get data from tables, calculations, data stores etc,. think if you have all the necessary information to get the appropriate response for the user before doing anything. If there are any missing pieces ask before doing anything. Also leverage the \"get composer\" tool to look at the existing tables/calcs/data stores to see what the possible data you can get and make an inferred selection on which table is pertinent to the request. For example if the user asks \"Get me all of Johns Sales for the week\" you might want to do a request to the \"Sales\" table since thats what the prompt mentioned, however its possible that the table isnt called \"sales\" but instead \"dtSales\" or \"transactions\" or even \"Sales\" (case sensitive). You need to be able to get a general understanding of the system before making calls, so try and digest that composer request before doing more actions. \n\nNB: The message request will come in the format of:\n```\nUser Message: <message>\nSupplemental Information: Object{}\n```\nUser Message is what you must respond to, the supplemental information is a json of all the tables, calcs, blocks and data stores for you to get context from.\n\n",
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        800,
+        -700
+      ],
+      "id": "f456770e-aa38-4c1a-96f1-a2c83869fdc9",
+      "name": "SPM Connector AI",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "Orbit_vector_store",
+        "toolDescription": "Look in here for information regarding Standard operating procedures. Look at this store if you're given a message that you are unsure what to do with/ respond with.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "orbit-test",
+          "mode": "list",
+          "cachedResultName": "orbit-test"
+        },
+        "options": {
+          "pineconeNamespace": "game-rules"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        -260
+      ],
+      "id": "9a2ada79-1310-47d9-910d-23c8ec6d9694",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "XvgTWkynUOjsJJpB",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        620
+      ],
+      "id": "2ba81e7b-f5f4-4d76-b3ed-7f450ca9fac6",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "G31quSh7LzWBFqO1",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://innovyne.app.n8n.cloud/mcp/dcc10372-ab7c-4b62-8c3d-bb38cf5f4d78/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        820,
+        -485
+      ],
+      "id": "38fb5b8e-c8da-439e-9ea0-f1f1011a487b",
+      "name": "Run Updates"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://innovyne.app.n8n.cloud/mcp/ec99b4b3-b348-4031-a270-27223502c4e8/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        980,
+        -480
+      ],
+      "id": "a8d632d1-477a-447d-b1bc-cd45fd98f1d9",
+      "name": "Get Data"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://innovyne.app.n8n.cloud/mcp/33511748-d661-425e-9905-7fbafc82de3f/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -480
+      ],
+      "id": "ed68b9ec-eb86-434c-80d3-fa791b3865dd",
+      "name": "Data Imports",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "call this tool to initiate and complete a data import. files uploaded must be base 64 encoded and the size of the file being uploaded must be defined. \n\nThe columns and matched columns fields are an array string, where each element is in line with its corresponding element (columns comes from the table schema and matched columns comes from the uploaded file. you can make a get call to the appropriate table to get the the columns for it). if the columns are as follows from the table and csv respectively:\n\n`Id, name, description, region, start`\nand\n`identification_no, desc, startDate, first_name, regional_territory`, the mappings should be \ncolumns: [\"Id\", \"name\", \"description\", \"region\", \"start\"]\nmatchedColumns: [\"identification_no\", \"first_name\", \"desc\", \"regional_territory\", \"startDate\"]\n\ndateFormat can either be: \"Default\", \"MonthFirst\", or \"DayFirst\". try and glean what the correct format is from the data that is given to you.",
+        "workflowId": {
+          "__rl": true,
+          "value": "H7X4wpf8BA2KrBVL",
+          "mode": "list",
+          "cachedResultName": "IV ICM Connector — Data Import Workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fileName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fileName', ``, 'string') }}",
+            "tableName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tableName', ``, 'string') }}",
+            "matchedColumns": "={{ $fromAI('matchedColumns', ``, 'JSON') }}",
+            "columns": "={{ $fromAI('columns', ``, 'JSON') }}",
+            "dateFormat": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('dateFormat', ``, 'string') }}",
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "fileName",
+              "displayName": "fileName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "tableName",
+              "displayName": "tableName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "matchedColumns",
+              "displayName": "matchedColumns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "columns",
+              "displayName": "columns",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "dateFormat",
+              "displayName": "dateFormat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1220,
+        -480
+      ],
+      "id": "0dca9c40-cca8-4d07-b5b9-966f9180ef96",
+      "name": "Call Data Import Workflow"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "146b7156-cba1-48fb-91bf-acab32f0365a",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        -830
+      ],
+      "id": "0d6e96d0-c5bc-40b9-9742-fb1435154fde",
+      "name": "Webhook call",
+      "webhookId": "146b7156-cba1-48fb-91bf-acab32f0365a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        1340,
+        -820
+      ],
+      "id": "439c8ac7-db69-45ac-9d8f-dc5b99041398",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        -880
+      ],
+      "id": "a6cc8965-99c0-48d2-a20c-9d5d640e1ba6",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "url": "https://spm.varicent.com/api/v1/composer/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Model\": \"InnoVyneDEMO\",\n  \"Content-Type\": \"application/json\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        -680
+      ],
+      "id": "0eeeaaaf-1558-4d4f-88d8-2ca0c2825794",
+      "name": "Get Data from Composer",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9nOz8Vb1iWOL2bUm",
+          "name": "pr-spm-api-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "composerResponse",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -680
+      ],
+      "id": "d2951dd5-d790-4739-8161-b76970e817d4",
+      "name": "Aggregate Composer Data"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        140,
+        -555
+      ],
+      "id": "1ba5d188-8ad7-4d4e-90a0-1145d9292f29",
+      "name": "Aggregate Composer Data with ChatInput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        140,
+        -830
+      ],
+      "id": "66d076c6-d9d0-4c3c-a2e8-412feb26bbea",
+      "name": "Aggregate Composer Data with WebReq"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -555
+      ],
+      "id": "1e783b96-f01c-4198-8c83-c8b24adcffe7",
+      "name": "Merge Chat Req"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -820
+      ],
+      "id": "2f72e1d2-4288-45be-803a-0d1360ee9757",
+      "name": "Merge Web Req"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbabce4a-4c1a-4996-98f5-c96ce06ec604",
+              "leftValue": "={{ $('Webhook call').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        -660
+      ],
+      "id": "1a53444a-b99e-47eb-9182-3926dbaf1fa5",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbabce4a-4c1a-4996-98f5-c96ce06ec604",
+              "leftValue": "={{ $('Webhook call').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        -830
+      ],
+      "id": "0c5c252c-9046-4214-a563-e905e650961c",
+      "name": "If Webhook Call"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbabce4a-4c1a-4996-98f5-c96ce06ec604",
+              "leftValue": "={{ $('When chat message received').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        -555
+      ],
+      "id": "5b84dfdf-f7b3-46d3-b177-61757f9fd1d1",
+      "name": "Is Chat Input"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"sessionId\":\"{{ $json.data.sessionId }}\",\n\"action\": \n\"sendMessage\",\n\"chatInput\": \"{{ $json.data.message }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -340,
+        -880
+      ],
+      "id": "6975710e-b0ca-4a58-b30b-518938eff886",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $('When chat message received')?.isExecuted ? 1 :  0 }}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        -680
+      ],
+      "id": "66e2d468-9f92-4e8a-9064-5d464b6a5736",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-file",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2aa571b6-7efa-4c23-9c0f-17e4007e2077",
+      "name": "File Upload Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1420,
+        -180
+      ],
+      "webhookId": "file-upload-endpoint",
+      "credentials": {
+        "jwtAuth": {
+          "id": "YAq8cUtdAzbRW6bE",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-response",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "error-message",
+              "name": "message",
+              "value": "={{ $json.validationErrors.join('; ') }}",
+              "type": "string"
+            },
+            {
+              "id": "file-info",
+              "name": "fileInfo",
+              "value": "={{ { fileName: $json.fileName, fileSize: $json.fileSize, fileExtension: $json.fileExtension } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "546caf1c-8c56-40c8-9e0e-e62168fa1e4e",
+      "name": "Validation Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -20,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-data-file",
+              "leftValue": "={{ $json.category }}",
+              "rightValue": "data-import",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7e4a7a4e-5104-47d0-b9db-cb6ce64f11c1",
+      "name": "Is Data File?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const fileExtension = item.json.fileExtension;\n  const fileName = item.json.fileName;\n  \n  // Initialize processing result\n  let processingResult = {\n    fileId: item.json.fileId,\n    fileName: fileName,\n    processingStatus: 'pending',\n    recordCount: 0,\n    errors: [],\n    insights: []\n  };\n  \n  try {\n    if (fileExtension === 'csv') {\n      // For CSV files, we'll prepare for Papa Parse processing\n      processingResult.processingType = 'csv';\n      processingResult.nextStep = 'parse-csv';\n    } else if (['xlsx', 'xls'].includes(fileExtension)) {\n      // For Excel files, prepare for XLSX processing\n      processingResult.processingType = 'excel';\n      processingResult.nextStep = 'parse-excel';\n    }\n    \n    // Add SPM/ICM specific data validation rules\n    processingResult.validationRules = getValidationRules(fileName);\n    \n    // Generate preview instructions\n    processingResult.previewSettings = {\n      rowLimit: 100,\n      detectHeaders: true,\n      detectTypes: true\n    };\n    \n    processingResult.processingStatus = 'ready';\n    \n  } catch (error) {\n    processingResult.processingStatus = 'error';\n    processingResult.errors.push(error.message);\n  }\n  \n  results.push({\n    json: processingResult,\n    binary: item.binary\n  });\n}\n\n// Helper function to get validation rules based on file name\nfunction getValidationRules(fileName) {\n  const rules = {\n    requiredColumns: [],\n    dataTypes: {},\n    businessRules: []\n  };\n  \n  const name = fileName.toLowerCase();\n  \n  if (name.includes('commission') || name.includes('comp')) {\n    rules.requiredColumns = ['payee_id', 'amount', 'period'];\n    rules.dataTypes = {\n      'amount': 'number',\n      'payee_id': 'string',\n      'period': 'date'\n    };\n    rules.businessRules = [\n      'Amount must be greater than 0',\n      'Payee ID must exist in system',\n      'Period must be valid date range'\n    ];\n  } else if (name.includes('sales') || name.includes('quota')) {\n    rules.requiredColumns = ['sales_rep', 'quota', 'actual', 'period'];\n    rules.dataTypes = {\n      'quota': 'number',\n      'actual': 'number',\n      'sales_rep': 'string'\n    };\n    rules.businessRules = [\n      'Quota must be positive',\n      'Sales rep must be active'\n    ];\n  } else if (name.includes('territory')) {\n    rules.requiredColumns = ['territory_id', 'sales_rep', 'accounts'];\n    rules.dataTypes = {\n      'territory_id': 'string',\n      'sales_rep': 'string'\n    };\n  }\n  \n  return rules;\n}\n\nreturn results;"
+      },
+      "id": "f05ddb36-d2bb-4e68-b3f4-4ba6d3fcc2b2",
+      "name": "Process Data File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "file-id",
+              "name": "fileId",
+              "value": "={{ $json.fileId }}",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "File uploaded and processed successfully",
+              "type": "string"
+            },
+            {
+              "id": "file-details",
+              "name": "fileDetails",
+              "value": "={{ { fileName: $json.fileName, category: $json.category, uploadPath: $json.uploadPath, metadata: $json.metadata } }}",
+              "type": "object"
+            },
+            {
+              "id": "processing-info",
+              "name": "processingInfo",
+              "value": "={{ $json.processingType ? { type: $json.processingType, status: $json.processingStatus, nextStep: $json.nextStep } : null }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9fb6a370-7486-44a8-b915-624d7c884625",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -20,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "document-status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "document-message",
+              "name": "message",
+              "value": "Document uploaded successfully",
+              "type": "string"
+            },
+            {
+              "id": "document-details",
+              "name": "fileDetails",
+              "value": "={{ { fileId: $json.fileId, fileName: $json.fileName, category: $json.category, uploadPath: $json.uploadPath } }}",
+              "type": "object"
+            },
+            {
+              "id": "suggested-actions",
+              "name": "suggestedActions",
+              "value": "={{ $json.category === 'document' ? ['extract-text', 'ai-analysis'] : ['preview', 'validate'] }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "75d1580d-e77f-4d57-ad4b-963d766e7217",
+      "name": "Document Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -20,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "8af5367f-0eac-4535-99b0-a2e24dd7fabb",
+      "name": "Return Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -20
+      ],
+      "id": "c6ab2a34-8beb-4898-9e40-dbc2d0dae756",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        100
+      ],
+      "id": "b1648891-0c3a-44c6-b9ef-1bf42441d2b0",
+      "name": "Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -180
+      ],
+      "id": "5fecf968-6c20-4d47-9a6e-c02900cdfb53",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2442c742-db05-4e5b-b4dd-5335d2e8888f",
+              "name": "data",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "fa9e18c6-10d7-4e24-9ea4-c31febe559ee",
+              "name": "organization",
+              "value": "={{ $('File Upload Webhook').item.json.jwtPayload.organization }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1000,
+        -180
+      ],
+      "id": "4c1ee890-5414-4604-a08c-e536f9bcb8f8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "orbit",
+          "mode": "list",
+          "cachedResultName": "orbit"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $json.organization || 'Innovyne' }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        -820,
+        -180
+      ],
+      "id": "47a118bb-1a36-40f8-87f4-d32d1e73e713",
+      "name": "Pinecone Vector Store Upload",
+      "credentials": {
+        "pineconeApi": {
+          "id": "XvgTWkynUOjsJJpB",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "embed-english-light-v2.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -100
+      ],
+      "id": "58c509f8-6b21-4559-abde-a1226583fc7d",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "fX0bgKcz3tk07KNp",
+          "name": "CohereApi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Get Data from Composer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Chat Req",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store Upload",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Updates": {
+      "ai_tool": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Imports": {
+      "ai_tool": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Data Import Workflow": {
+      "ai_tool": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook call": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Data from Composer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SPM Connector AI": {
+      "main": [
+        []
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data from Composer": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Composer Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Composer Data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Composer Data with ChatInput": {
+      "main": [
+        [
+          {
+            "node": "Is Chat Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Composer Data with WebReq": {
+      "main": [
+        [
+          {
+            "node": "If Webhook Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Chat Req": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Composer Data with ChatInput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Web Req": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Composer Data with WebReq",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Webhook Call": {
+      "main": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Chat Input": {
+      "main": [
+        [
+          {
+            "node": "SPM Connector AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge Web Req",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Merge Web Req",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge Chat Req",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Upload Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Data File?": {
+      "main": [
+        [
+          {
+            "node": "Process Data File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Document Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Data File": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store Upload",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store Upload": {
+      "main": [
+        [
+          {
+            "node": "Is Data File?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7dd22336-1cd6-4387-8812-b97baac708d1",
+  "triggerCount": 3,
+  "tags": []
+}
