@@ -1,0 +1,181 @@
+{
+  "createdAt": "2025-06-30T16:38:22.346Z",
+  "updatedAt": "2025-08-14T17:28:09.000Z",
+  "id": "Mo6XTeNcnL0oNgGA",
+  "name": "Update Data",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "dcc10372-ab7c-4b62-8c3d-bb38cf5f4d78"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "06b31f7f-a8e6-4d5d-a6b8-321739a1cb95",
+      "name": "MCP Server Trigger Run Updates",
+      "webhookId": "dcc10372-ab7c-4b62-8c3d-bb38cf5f4d78"
+    },
+    {
+      "parameters": {
+        "toolDescription": "inserts records in a table. Request Body looks like:\n\n{\nrows: string[],\ninputFormId: 0,\neffectiveDate: null,\noverwrite: [null]\n}\n\nin the case of updating an effective dated column, make sure the effective date starts at the month end, and ends at \"12/31/2099\" (aka infinity because the timestamp is far enough into the future it effectively means the record is active indefinitely)",
+        "method": "POST",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{$fromAI('TableName','Name of the table to update', 'string')}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rows",
+              "value": "={{ $fromAI('rows', `This should be an array of the row as it should be once updated, with only the changed firelds different, with the columns in the same order as returned by the get function. All items in the array must be a string, and should be an array of arrays`, 'json') }}"
+            },
+            {
+              "name": "inputFormId",
+              "value": "={{0}}"
+            },
+            {
+              "name": "effectiveDate",
+              "value": "={{null}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        220
+      ],
+      "id": "dd1969b1-29c9-46b3-9cdf-204dc40d7d48",
+      "name": "Insert Records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Update records in a table. Request Body looks like:\n\n{\noldRows: string[],\nrows: string[],\ninputFormId: 0,\neffectiveDate: null,\noverwrite: [null]\n}.\n\nIn the case that a table is effective dated, set the effective date of the row being updated to current month end, and then run an insert, creating a new record where the changed value(s) are different, the effective date starts at next month start, and ends at \"12/31/2099\" (a time stamp far into the future that effectively means this record is active indefinitely)\n",
+        "method": "PATCH",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{{$fromAI('TableName','Name of the table to update', 'string')}}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "value": "InnoVyneDEMO"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "oldRows",
+              "value": "={{ $fromAI('oldRows', `This should be an array of the row as it currently is, unchanged and with the columns in the same order as returned by the get function. All items in the array must be a string, and should be an array of arrays`, 'json') }}"
+            },
+            {
+              "name": "rows",
+              "value": "={{ $fromAI('rows', `This should be an array of the row as it should be once updated, with only the changed firelds different, with the columns in the same order as returned by the get function. All items in the array must be a string, and should be an array of arrays`, 'json') }}"
+            },
+            {
+              "name": "inputFormId",
+              "value": "={{0}}"
+            },
+            {
+              "name": "effectiveDate",
+              "value": "={{ null }}"
+            },
+            {
+              "name": "overwrite",
+              "value": "={{ [null] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        220
+      ],
+      "id": "513ab5e2-19d6-451f-9fc0-a5c129d2ab5b",
+      "name": "Update records",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Insert Records": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Run Updates",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update records": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger Run Updates",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "3a4ca82c-d7f3-4de0-9ca2-9398394cdbbb",
+  "triggerCount": 1,
+  "tags": [
+    {
+      "createdAt": "2025-08-14T17:27:48.817Z",
+      "updatedAt": "2025-08-14T17:27:48.817Z",
+      "id": "dbeWvFo6JyXIZRnx",
+      "name": "Orbit Core"
+    }
+  ]
+}
