@@ -1,0 +1,194 @@
+{
+  "createdAt": "2025-04-19T18:18:40.315Z",
+  "updatedAt": "2025-06-20T20:36:40.000Z",
+  "id": "zPppDoAC37y56AyR",
+  "name": "MCPserver-ICM",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "c91dbe34-9af5-4755-84d8-3bcd2d15c6fc"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "4ef6f860-f6dc-42ab-8b33-21efd211d2e8",
+      "name": "MCP Server Trigger",
+      "webhookId": "c91dbe34-9af5-4755-84d8-3bcd2d15c6fc"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the Scheduler tasks from the ICM model.",
+        "url": "https://spm.varicent.com/api/v1/scheduleitem",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "Content-Type",
+              "valueProvider": "fieldValue",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "valueProvider": "fieldValue",
+              "value": "InnoVynePROD"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        220
+      ],
+      "id": "ebc1b8b5-2e5e-43f6-895f-c5ee4c9e84fb",
+      "name": "GetScheduler",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get data from a table in ICM model.",
+        "url": "=https://spm.varicent.com/api/v1/customtables/{rTable}/inputforms/0/data",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "Content-Type",
+              "valueProvider": "fieldValue",
+              "value": "application/json"
+            },
+            {
+              "name": "Model",
+              "valueProvider": "fieldValue",
+              "value": "InnoVynePROD"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "rTable",
+              "description": "This is the name of the Table.",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        220
+      ],
+      "id": "c3b1e720-d383-4462-bd81-8366daae49b6",
+      "name": "GetTableData",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hK5EywnPg9KWZwvY",
+          "name": "om-var-spm-key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to get data from a specified table in the ICM database. It requires a table name to be passed in the rTable parameter.",
+        "workflowId": {
+          "__rl": true,
+          "value": "HpuNVsMZoSvhn6jE",
+          "mode": "list",
+          "cachedResultName": "IV ICM Connector — icm-get-TableData"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rTable": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('rTable', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "rTable"
+          ],
+          "schema": [
+            {
+              "id": "rTable",
+              "displayName": "rTable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        220
+      ],
+      "id": "6ac21695-b58a-488f-a7dc-006ed3c027ad",
+      "name": "Call n8n Workflow Tool"
+    }
+  ],
+  "connections": {
+    "GetScheduler": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetTableData": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call n8n Workflow Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "91a0eed6-5b47-4e15-8c86-ee4a53d6e0af",
+  "triggerCount": 1,
+  "tags": []
+}
